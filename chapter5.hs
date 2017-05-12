@@ -336,7 +336,7 @@ xform (x, y) = (,) (xz x) (yz y)
 
 -- 4
 munge :: (x -> y) -> (y -> (w, z)) -> x -> w
-munge xToY yToWZ x = fst $ yToWZ $ xToY x
+munge xToY yToWZ = fst $ yToWZ $ xToY
 
 -- principal type is most generic possibility which still typechecks
 
