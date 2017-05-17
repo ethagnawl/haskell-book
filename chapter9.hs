@@ -148,3 +148,14 @@ itIsMystery xs = map (\x -> elem x "aeiou") xs
 -- 6
 import Data.Bool (bool)
 result2 = map (\x -> bool x (-x) (x == 3)) [1..10] -- [1,2,-3,4,5,6,7,8,9,10]
+
+-- Filtering
+-- 1
+res = filter (\n -> (mod n 3) == 0) [1..30] -- [3,6,9,12,15,18,21,24,27,30]
+
+-- 2
+cnt = length . filter (\n -> (mod n 3) == 0) -- 10
+
+-- 3
+myFilter str = filter (\word -> word /= "the" && word /= "a" && word /= "an") $ words str
+myFilter "the brown dog was a goof"
