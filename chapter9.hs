@@ -159,3 +159,59 @@ cnt = length . filter (\n -> (mod n 3) == 0) -- 10
 -- 3
 myFilter str = filter (\word -> word /= "the" && word /= "a" && word /= "an") $ words str
 myFilter "the brown dog was a goof"
+
+-- Zipping exercises
+
+-- 1
+
+myZip :: [a] -> [b] -> [(a, b)]
+myZip list1 [] = []
+myZip [] list2 = []
+myZip list1 list2 = [(,) (head list1) (head list2)] ++ myZip (tail list1) (tail list2)
+
+myZip [1,2,3] [4,5,6,7] -- [(1,4),(2,5),(3,6)]
+
+-- 2
+myZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myZipWith comb list1 list2 = map (\(x, y) -> comb x y) (myZip list1 list2)
+
+-- 3
+-- rewrite myZip in terms of myZipWith
+-- I wrote myZipWith in terms of myZip, so I'll use Prelude's zip in
+-- myZipWith instead.
+
+myZipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+myZipWith' comb list1 list2 = map (\(x, y) -> comb x y) (zip list1 list2)
+
+myZip' = myZipWith' (,)
+myZip' [1, 2, 3] [4, 5, 6]
+
+-- Chapter Exercises
+
+import Data.Char
+
+-- 1
+-- isUpper :: Char -> Bool
+-- toUpper :: Char -> Char
+
+-- 2
+stripLowers = filter isUpper
+stripLowers "HbEfLrLxO" -- "HELLO"
+
+-- 3
+capitalize' :: String -> String
+capitalize' (fst:rst) = (:) (toUpper fst) rst
+
+-- 4
+uppercase' [] = []
+uppercase' (fst:rst) = (:) (toUpper fst) (uppercase' rst)
+
+-- 5
+firstAsCap str = head $ capitalize' str
+
+-- 6
+-- composed
+firstAsCap' lst = (head . capitalize') lst
+
+-- point free
+firstAsCap'' = head . capitalize'
