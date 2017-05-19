@@ -215,3 +215,66 @@ firstAsCap' lst = (head . capitalize') lst
 
 -- point free
 firstAsCap'' = head . capitalize'
+
+import Data.Char
+
+e str shift = map chr $ map (+ lower) $
+              map (\c -> mod (c + shift) 27) $
+              map (flip (-) lower) $
+              map ord $
+              str
+  where lower = ord 'a'
+        upper = ord 'z'
+
+d str shift = map chr $ map (+ lower) $
+              map (\c -> mod (c - shift) 27) $
+              map (flip (-) lower) $
+              map ord $ str
+  where lower = ord 'a'
+        upper = ord 'z'
+
+
+-- Writing your own standard functions
+
+-- 1
+myOr :: [Bool] -> Bool
+myOr = foldl (||) False
+
+-- 2
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny func lst = foldl (||) False $ map func lst
+
+-- 3
+myElem :: a -> [a] -> Bool
+myElem a as = foldl (||) False $ map (== a) as
+
+-- 4
+myReverse = foldl (\xs x -> x : xs) []
+
+-- 5
+squish :: [[a]] -> [a]
+squish = foldl (++) []
+
+-- 6
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap func lst = foldl (++) [] $ map func lst
+
+-- 7
+squishMap' :: (a -> [b]) -> [a] -> [b]
+squishMap' func lst = squish $ map func lst
+
+-- 8
+myMaximumBy func lst@(x:xs) = head $ foldl funcApp [x] lst
+  where funcApp = (\xs x ->
+                       if ((func x (head xs)) == GT) then x : xs
+                       else xs)
+
+-- 9
+myMinimumBy func lst@(x:xs) = head $ foldl funcApp [x] lst
+  where funcApp = (\xs x ->
+                       if ((func x (head xs)) == LT) then x : xs
+                       else xs)
+
+-- BONUS?
+myMaximum = myMaximumBy compare
+myMinimum = myMinimumBy compare
