@@ -118,3 +118,19 @@ avgDb db = dbNumbersSum / dbNumbersLength
   where dbNumbers = filterDbNumber db
         dbNumbersLength = (fromIntegral $ length dbNumbers) :: Double
         dbNumbersSum = (fromIntegral $ sumDb db) :: Double
+
+-- scans exercises
+fibs = 1 : scanl (+) 1 fibs
+
+-- 1
+firstNFibs n = take n fibs
+first20Fibs = firstNFibs 20
+
+-- 2
+fibsLessThan100 = takeWhile (< 100) fibs
+
+-- 3
+factorial n = factorial'
+  where index = (n - 1)
+        factorial' = scanl (*) 1 [2..n] !! index
+
