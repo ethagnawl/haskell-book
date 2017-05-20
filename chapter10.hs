@@ -65,6 +65,8 @@ foldr (flip const) 'z' [1..5]
 -- each element of the list. The strict evaluation here means it has less
 -- negative effect on performance over long lists.
 
+-- Exercises: Database Processing
+
 -- module DatabaseThings where
 
 import Data.Time
@@ -90,3 +92,29 @@ getDate (DbDate date) = date
 getDate _ = error "not supported"
 filterDbDate db = map getDate $ filter isDbDate db
 -- filterDbDate theDatabase = [DbDate 1911-05-01 09:28:43 UTC,DbDate 1921-05-01 09:28:43 UTC]
+
+-- 2
+-- Write a function that filters for DbNumber values and returns a list of the
+-- Integer values inside them.
+filterDbNumber :: [DatabaseItem] -> [Integer]
+filterDbNumber db = [number | (DbNumber number) <- db]
+
+-- 3
+-- Write a function that gets the most recent date.
+-- mostRecent :: [DatabaseItem] -> UTCTime
+mostRecent db = maximum $ filterDbDate db
+
+-- 4
+-- Write a function that sums all of the DbNumber values.
+sumDb :: [DatabaseItem] -> Integer
+sumDb db = foldr (+) 0 $ filterDbNumber db
+
+-- 5
+-- Write a function that gets the average of the DbNumber values.
+-- You'll probably need to use fromIntegral
+-- to get from Integer to Double.
+avgDb :: [DatabaseItem] -> Double
+avgDb db = dbNumbersSum / dbNumbersLength
+  where dbNumbers = filterDbNumber db
+        dbNumbersLength = (fromIntegral $ length dbNumbers) :: Double
+        dbNumbersSum = (fromIntegral $ sumDb db) :: Double
