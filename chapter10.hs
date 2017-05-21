@@ -134,3 +134,38 @@ factorial n = factorial'
   where index = (n - 1)
         factorial' = scanl (*) 1 [2..n] !! index
 
+
+-- chapter exercises
+
+-- warm-up
+-- 1
+stops = "pbtdkg"
+vowels = "aeiou"
+
+-- a) Write a function that takes inputs from stops and vowels and makes
+-- 3-tuples of all possible stop-vowel-stop com- binations. These will not all
+-- correspond to real words in English, although the stop-vowel-stop pattern
+-- is common enough that many of them will.
+threeTupleCombos :: [a] -> [a] -> [(a, a, a)]
+threeTupleCombos xs ys = [(x, y, x') | x <- xs, y <- ys, x' <- xs]
+
+stopVowelStopCombosBeginningWithP = filter filterFunc combos
+  where filterFunc = (\(s, _, _) -> s == 'p')
+        combos = threeTupleCombos stops vowels
+
+nouns = ["dog", "turkey", "Istanbul", "wallet"]
+verbs = ["open", "close", "run", "frolic"]
+nounVerbNounCombos nouns verbs = threeTupleCombos nouns verbs
+
+-- 2 What does the following mystery function do? What is its type?  Try to get
+-- a good sense of what it does before you test it in the REPL to verify it.
+avgWordLength :: String -> Int
+avgWordLength str = div (sum (map length (words str))) (length (words str))
+
+-- 3
+-- We’d really like the answer to be more precise. Can you rewrite that using
+-- fractional division?
+preciseAvgWordLength :: String -> Double
+preciseAvgWordLength str = dividend / divisor
+  where dividend = fromIntegral (sum (map length (words str))) :: Double
+        divisor = fromIntegral (length (words str)) :: Double
