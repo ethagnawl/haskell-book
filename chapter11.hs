@@ -229,7 +229,7 @@ newtype NumPig = NumPig Int deriving (Eq, Show)
 data Farmhouse = Farmhouse NumCow NumPig deriving (Eq, Show)
 type Farmhouse' = Product NumCow NumPig
 
--- newtype can only wrap a single constructor Some Thing but not Some Thing Else
+-- newtype can only wrap a single constructor Some foldTree but not Some Thing Else
 -- type is just a synonym - doesn't create new type e.g. type String = [Char]
 
 -- Exercise: Programmers
@@ -391,4 +391,19 @@ testPostorder =
   then putStrLn "Postorder fine!"
   else putStrLn "postorder failed check"
 
+-- Using monoids probably counts as cheating, but I really wanted to break the
+-- different steps out into small pieces. If anyone happens to see this
+-- and knows of a way to somehow compose the two `b`s (left' and right'), I'd
+-- be very interesting in hearing about it!
+foldTree :: (Monoid a, Monoid b) => (a -> b -> b) -> b -> BinaryTree a -> b
+foldTree func seed Leaf = seed
+foldTree func seed (Node left a right) = func a memo
+  where
+    left' = (foldTree func seed left)
+    right' = (foldTree func seed right)
+    memo = mappend left' right'
 
+foldTree' :: (a -> b -> b) -> b -> BinaryTree a -> b
+foldTree' func seed Leaf = seed
+foldTree' func seed (Node left a right) = foldTree' func seed' right
+  where seed' = func a $ foldTree' func seed left
