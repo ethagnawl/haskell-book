@@ -391,10 +391,10 @@ testPostorder =
   then putStrLn "Postorder fine!"
   else putStrLn "postorder failed check"
 
--- Using monoids probably counts as cheating, but I really wanted to break the
--- different steps out into small pieces. If anyone happens to see this
--- and knows of a way to somehow compose the two `b`s (left' and right'), I'd
--- be very interesting in hearing about it!
+-- Using Monoid probably counts as cheating, but I really wanted to break the
+-- different computations out into smaller, named pieces. If anyone happens to
+-- see this and knows of a way to somehow compose the two `b`s
+-- (left' and right'), I'd be very interesting in hearing about it!
 foldTree :: (Monoid a, Monoid b) => (a -> b -> b) -> b -> BinaryTree a -> b
 foldTree func seed Leaf = seed
 foldTree func seed (Node left a right) = func a memo
@@ -407,3 +407,22 @@ foldTree' :: (a -> b -> b) -> b -> BinaryTree a -> b
 foldTree' func seed Leaf = seed
 foldTree' func seed (Node left a right) = foldTree' func seed' right
   where seed' = func a $ foldTree' func seed left
+
+-- Chapter Exercises
+
+data Weekday = Monday | Tuesday | Wednesday | Thursday | Friday
+
+-- 1
+-- a / Weekday is a type with 5 data constructors
+
+-- 2
+f Friday = "Miller Time"
+-- c = f :: Weekday -> String
+
+-- 3
+-- c / types defined using `data` must begin with a capital letter
+
+-- 4
+g xs = xs !! (length xs - 1)
+-- c / g delivers the final element of xs
+
