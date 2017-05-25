@@ -466,3 +466,51 @@ crypt string keyword direction = concatMap func sks
 encrypt string keyword = crypt string keyword e
 
 decrypt string keyword = crypt string keyword d
+
+-- As Patterns
+
+-- 1
+-- This should return True if (and only if) all the values in the
+-- first list appear in the second list, though they need not be contiguous.
+isSubsequenceOf :: (Eq a) => [a] -> [a] -> Bool
+isSubsequenceOf [] _ = True
+isSubsequenceOf _  [] = False
+isSubsequenceOf subseq@(subseqx:subseqxs) (x:xs) =
+  (subseqx == x && isSubsequenceOf subseqxs xs) || recur
+  where recur = isSubsequenceOf subseq xs
+
+-- 2
+-- Split a sentence into words, then tuple each word with the capitalized
+-- form of each.
+import Data.Char
+
+capitalizeWords :: String -> [(String, String)]
+capitalizeWords sentence = go $ words sentence
+  where
+    go [] = []
+    go (word@(character:characters):words') = (:) (word, toUpper character : characters)
+                                                  (go words')
+
+
+-- Language Exercises
+-- 1
+capitalizeWord :: String -> String
+capitalizeWord (h:t) = (toUpper h) : t
+
+-- 2
+import Data.List.Split
+
+-- I know this is not what the authors had in mind, but I found myself in a
+-- rabbit hole and old (lisp) habits die hard
+capitalizeParagraph :: String -> String
+capitalizeParagraph paragraph = capitalizedParagraph
+  where sentences = filter (/= "") $ splitOn "." paragraph
+        sentences' = map (dropWhile (== ' ')) sentences
+        capitalizedSentences = map
+                                (\x -> (capitalizeWord $ [head x]) ++ (tail x))
+                                sentences'
+        capitalizedParagraph = foldr  (\x xs ->
+                                          if xs == "" then x ++ "."
+                                          else x ++ ". " ++ xs)
+                                      ""
+                                      capitalizedSentences
