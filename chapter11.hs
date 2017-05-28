@@ -395,6 +395,8 @@ testPostorder =
 -- different computations out into smaller, named pieces. If anyone happens to
 -- see this and knows of a way to somehow compose the two `b`s
 -- (left' and right'), I'd be very interesting in hearing about it!
+-- Note: you can combine left' and right' using func, but it changes foldTree's
+-- type signature to (a -> a -> a) -> a -> BinaryTree a -> a
 foldTree :: (Monoid a, Monoid b) => (a -> b -> b) -> b -> BinaryTree a -> b
 foldTree func seed Leaf = seed
 foldTree func seed (Node left a right) = func a memo
@@ -514,3 +516,126 @@ capitalizeParagraph paragraph = capitalizedParagraph
                                           else x ++ ". " ++ xs)
                                       ""
                                       capitalizedSentences
+
+-- Phone
+
+import Data.List
+import Control.Monad
+import Data.Char
+
+-- 1
+type Primary = Char;
+type Secondary = String;
+data Key' = Key' Primary Secondary deriving (Show);
+data Phone = Phone [Key'] deriving (Show);
+phone = Phone [
+         Key' '1' "1"
+        ,Key' '2' "abc2"
+        ,Key' '3' "def3"
+        ,Key' '4' "ghi4"
+        ,Key' '5' "jkl5"
+        ,Key' '6' "mno6"
+        ,Key' '7' "pqrs7"
+        ,Key' '8' "tuv8"
+        ,Key' '9' "wxyz9"
+        ,Key' '*' "^"
+        ,Key' '0' " +-0"
+        ,Key' '#' ".,"
+        ]
+
+-- 2
+
+convo :: [String]
+convo =
+  [
+   "Wanna play 20 questions"
+  ,"Ya"
+  ,"U 1st haha"
+  ,"Lol ok. Have u ever tasted alcohol lol"
+  ,"Lol ya"
+  ,"Wow ur cool haha. Ur turn"
+  ,"Ok. Do u think I am pretty Lol"
+  ,"Lol ya"
+  ,"Haha thanks just making sure rofl ur turn"
+  ]
+
+type Presses = Int
+type Taps = [(Primary, Presses)]
+
+-- assuming the default phone definition
+-- 'a' -> [('2', 1)]
+-- 'A' -> [('*', 1), ('2', 1)]
+reverseTaps :: Phone -> Char -> Taps
+reverseTaps (Phone keys) char = taps'
+  where char' = toLower char
+        keys' = [(primary, secondary) | (Key' primary secondary) <- keys]
+        key = find (\(_, secondary) -> elem char' secondary) keys'
+        primary = liftM fst key
+        primary' = case primary of
+                    Just p' -> p'
+                    Nothing -> error "There should always be a primary."
+        index = liftM snd key >>= findIndex (== char')
+        index' = case index of
+                  Just i' -> i' + 1
+                  Nothing -> error "There should always be an index."
+        taps = if (isUpper char) then [('*', 1)] else []
+        taps' = taps ++ [(primary', index')]
+
+-- What's up with the proposed name, _cellPhonesDead_?
+messageToTaps :: Phone -> String -> Taps
+messageToTaps phone = concatMap (reverseTaps phone)
+
+conversationToTaps :: Phone -> [String] -> [Taps]
+conversationToTaps phone = map (messageToTaps phone)
+
+-- 3
+fingerTaps :: Taps -> Presses
+fingerTaps = sum . map snd
+
+-- 4
+-- Not sure why the book mentions cost per letter?
+mostPopularLetter :: String -> [String]
+mostPopularLetter message = popularChrs'
+  where popularChrs = reverse $
+                      sortBy (\x y -> compare (length x) (length y)) $
+                      group message
+        len = length $ head popularChrs
+        popularChrs' = sort $
+                       foldr (\(x:xs) xss -> [x] : xss) [] $
+                       takeWhile (\x -> length x == len) popularChrs
+
+-- 5
+-- Lots of duplication between these two, but I've been on this chapter for
+-- far too long to tease out the common patterns.
+mostPopularWordInConversation :: [String] -> [String]
+mostPopularWordInConversation message = popularWords
+  where func = (\x memo@(x':xs') ->
+                   if x == (fst x') then (x, (snd x') + 1) : xs'
+                   else (x, 1) : memo)
+        sorted =  sortBy (\(_, count1) (_, count2) -> compare count2 count1) $
+                  foldr func [("", 0)] $
+                  reverse $
+                  sort $
+                  concatMap words message
+        sortedHeadLength = snd $ head sorted
+        popularWordPairs = takeWhile (\(word, count) -> count == sortedHeadLength) sorted
+        popularWords = map fst popularWordPairs
+
+mostPopularLetterInConversation :: [String] -> [String]
+mostPopularLetterInConversation message = popularLetters
+  where func = (\x memo@(x':xs') ->
+                   if x == (fst x') then (x, (snd x') + 1) : xs'
+                   else (x, 1) : memo)
+        sorted =  sortBy (\(_, count1) (_, count2) -> compare count2 count1) $
+                  foldr func [(' ', 0)] $
+                  reverse $
+                  sort $
+                  filter (/= ' ') $ -- should probably also account for punctuation
+                  foldr (++) "" message
+        sortedHeadLength = snd $ head sorted
+        popularLetterPairs = takeWhile (\(word, count) -> count == sortedHeadLength) sorted
+        popularLetters = foldr (\x xs -> [x] : xs) [] $ sort $ map fst popularLetterPairs
+
+mostPopularWordInConversation convo -- ["Lol"]
+
+mostPopularLetterInConversation convo -- ["a"]
