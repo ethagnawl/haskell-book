@@ -639,3 +639,27 @@ mostPopularLetterInConversation message = popularLetters
 mostPopularWordInConversation convo -- ["Lol"]
 
 mostPopularLetterInConversation convo -- ["a"]
+
+-- Hutton's Razor
+
+data Expr = Lit Integer | Add Expr Expr deriving (Show)
+
+-- 1. Your first task is to write the “eval” function which reduces an
+-- expression to a final sum.
+
+eval :: Expr -> Integer
+eval (Lit i) = i
+eval (Add left right) = left' + right'
+  where left' = eval left
+        right' = eval right
+
+eval (Add (Lit 1) (Lit 9001)) -- 9002
+
+-- 2
+
+printExpr :: Expr -> String
+printExpr (Add left right) = left' ++ " + " ++ right'
+  where left' = printExpr left
+        right' = printExpr right
+printExpr (Lit i) = show i
+printExpr (Add (Add (Lit 2) (Lit 2)) (Lit 2)) --- 2 + 2 + 2
