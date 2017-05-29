@@ -152,8 +152,8 @@ tooMany (42::Int, 1::Int) -- True
 --   instance TooMany Int where
 --     tooMany n = n > 42
 
---   instance (Num a, TooMany a) => TooMany (a, a) where
---     tooMany (n, nn) = tooMany (n + nn)
+instance (Num a, TooMany a) => TooMany (a, a) where
+  tooMany (n, nn) = tooMany (n + nn)
 
 -- Exercises: Pity the Bool
 -- 1
