@@ -64,7 +64,7 @@ module PairModule where
 module TupleModule where
 
 data Tuple a b = Tuple a b deriving Show
-
+x = Tuple 2 2
 instance (Eq a, Eq b) => Eq (Tuple a b) where
   (==) (Tuple a b) (Tuple a' b') =  a == a' &&
                                     b == b'

@@ -28,3 +28,45 @@ replaceTheWithA' string = firstWord' : replaceTheWithA' restWords
 
 replaceTheWithA :: String -> String
 replaceTheWithA string = unwords $ concat $ replaceTheWithA' string
+
+-- 2
+-- Write a recursive function that takes a text/string, breaks it into
+-- words, and counts the number of instances of ”the” followed by
+-- a vowel-initial word.
+isVowel l = case l of
+              'a' -> True
+              'e' -> True
+              'i' -> True
+              'o' -> True
+              'u' -> True
+              'y' -> True
+              _ -> False
+
+countTheBeforeVowel :: String -> Integer
+countTheBeforeVowel [] = 0
+countTheBeforeVowel str = count + countTheBeforeVowel rest
+  where isThe w = w == "the"
+        words' = words str
+        firstTwoWords = take 2 words'
+        count = if length firstTwoWords /= 2
+                  then 0
+                  else
+                    if  isThe $ head firstTwoWords &&
+                        isVowel (head $ head $ tail firstTwoWords)
+                      then 1
+                      else 0
+        rest = unwords $ tail words'
+
+-- 3
+-- Return the number of letters that are vowels in a word.
+-- Hint: it’s helpful to break this into steps. Add any helper func-
+-- tions necessary to achieve your objectives.
+-- a) Test for vowelhood
+-- b) Return the vowels of a string
+-- c) Count the number of elements returned
+countVowels :: String -> Integer
+countVowels str = length $
+                  filter (True &&) $
+                  map isVowel $
+                  foldr (++) "" $
+                  words str
