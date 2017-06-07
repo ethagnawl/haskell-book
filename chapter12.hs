@@ -70,3 +70,24 @@ countVowels str = length $
                   map isVowel $
                   foldr (++) "" $
                   words str
+
+-- Validate the word
+countSyllableParts :: (Bool -> Bool) -> String -> Int
+countSyllableParts filterFunc str = length $
+                                    filter filterFunc $
+                                    map isVowel $
+                                    foldr (++) "" $
+                                    words str
+
+countVowels' = countSyllableParts ((==) True)
+countConsonants = countSyllableParts ((==) False)
+
+newtype Word' = Word' String deriving (Eq, Show)
+vowels = "aeiou"
+
+mkWord :: String -> Maybe Word'
+mkWord str = result
+  where
+    vowels = countVowels' str
+    consonants = countConsonants str
+    result = if vowels > consonants then Nothing else Just $ Word' str
