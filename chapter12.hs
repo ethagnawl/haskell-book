@@ -177,3 +177,46 @@ flipMaybe lst = if anyNothings
   where
     anyNothings = any isNothing lst
     values = catMaybes lst
+
+-- Small library for Either
+isLeft (Left _) = True
+isLeft _ = False
+
+isRight (Right _) = True
+isRight _ = False
+
+-- 1. Try to eventually arrive at a solution that uses foldr, even if
+-- earlier versions don’t use foldr.
+lefts' :: [Either a b] -> [a]
+lefts' = foldr (\x xs ->  if (isLeft x)
+                            then (extractLeft x) : xs
+                            else xs) []
+  where extractLeft (Left x) = x
+
+-- 2. Same as the last one. Use foldr eventually.
+rights' :: [Either a b] -> [b]
+rights' = foldr (\x xs ->  if (isRight x)
+                            then (extractRight x) : xs
+                            else xs) []
+  where extractRight (Right x) = x
+
+-- 3.
+partitionEithers' :: [Either a b] -> ([a], [b])
+partitionEithers' es = (lefts'', rights'')
+  where lefts'' = lefts' es
+        rights'' = rights' es
+
+-- 4.
+eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe' func (Right r) = Just (func r)
+eitherMaybe' func _ = Nothing
+
+-- 5. This is a general catamorphism for Either values.
+either' :: (a -> c) -> (b -> c) -> Either a b -> c
+either' aToC _ (Left l) = aToC l
+either' _ bToC (Right r) = bToC r
+
+-- 6. Same as before, but use the either' function you just wrote.
+eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe'' func (Right b) = Just $ func b
+eitherMaybe'' _ (Left _) = Nothing
