@@ -91,3 +91,18 @@ mkWord str = result
     vowels = countVowels' str
     consonants = countConsonants str
     result = if vowels > consonants then Nothing else Just $ Word' str
+
+-- It's only natural
+data Nat = Zero | Succ Nat deriving (Eq, Show)
+
+natToInteger :: Nat -> Integer
+natToInteger Zero = 0
+natToInteger (Succ nat) = (+) 1 (natToInteger nat)
+
+integerToNat :: Integer -> Maybe Nat
+integerToNat int =  if int < 0
+                      then Nothing
+                      else Just (reduceNatToZero int)
+  where reduceNatToZero 0 = Zero
+        reduceNatToZero n = Succ (reduceNatToZero (n - 1))
+
