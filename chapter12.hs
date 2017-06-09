@@ -220,3 +220,34 @@ either' _ bToC (Right r) = bToC r
 eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
 eitherMaybe'' func (Right b) = Just $ func b
 eitherMaybe'' _ (Left _) = Nothing
+
+-- Unfolds
+
+-- 1. Write the function myIterate using direct recursion. Compare
+-- the behavior with the built-in iterate to gauge correctness. Do
+-- not look at the source or any examples of iterate so that you
+-- are forced to do this yourself.
+myIterate :: (a -> a) -> a -> [a]
+myIterate f x = [x] ++ myIterate f (f x)
+
+-- The following also works, but I don't understand where the list originates.
+-- myIterate' f x = x : myIterate f (f x)
+
+-- 2. Write the function myUnfoldr using direct recursion. Compare
+-- with the built-in unfoldr to check your implementation. Again,
+-- don’t look at implementations of unfoldr so that you figure it
+-- out yourself.
+myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+myUnfoldr f s = if (isNothing v)
+                  then []
+                  else [(fst t)] ++ myUnfoldr f (snd t)
+  where v = f s
+        t = fromJust v
+
+-- 3. Rewrite myIterate into betterIterate using myUnfoldr. A hint —
+-- we used unfoldr to produce the same results as iterate earlier.
+-- Do this with different functions and see if you can abstract the
+-- structure out.
+
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = myUnfoldr (\x -> Just (x, f x)) x
