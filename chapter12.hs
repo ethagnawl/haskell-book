@@ -251,3 +251,28 @@ myUnfoldr f s = if (isNothing v)
 
 betterIterate :: (a -> a) -> a -> [a]
 betterIterate f x = myUnfoldr (\x -> Just (x, f x)) x
+
+-- Finally something other than a list
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) deriving (Eq, Ord, Show)
+
+-- 1 Write unfold for BinaryTree.
+unfold :: (a -> Maybe (a, b, a)) -> a -> BinaryTree b
+unfold func seed =
+  case (func seed) of
+    Just (l, m, r) -> Node (unfold func l) m (unfold func r)
+    Nothing -> Leaf
+
+-- 2. Make a tree builder.
+-- Using the unfold function you’ve just made for BinaryTree, write
+-- the following function:
+treeBuild :: Integer -> BinaryTree Integer
+treeBuild n = unfold func 0
+  where func = (\x -> if x == n
+                        then Nothing
+                        else Just (x + 1, x, x + 1))
+
+-- result = treeBuild 0 == Leaf -- True
+-- result = treeBuild 1 == Node Leaf 0 Leaf
+-- result = treeBuild 2 == Node (Node Leaf 1 Leaf) 0 (Node Leaf 1 Leaf)
+-- result = treeBuild 3 == Node (Node (Node Leaf 2 Leaf) 1 (Node Leaf 2 Leaf)) 0 (Node (Node Leaf 2 Leaf) 1 (Node Leaf 2 Leaf))
