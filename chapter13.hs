@@ -6,3 +6,9 @@
   -- a. Control.Concurrent.MVar, Filesystem.Path.CurrentOS and Control.Concurrent
   -- b. Filesystem
   -- c. Control.Monad
+
+-- Modifying Code
+
+-- 1. see chapter-thirteen/encrypt.hs and chapter-thirteen/decrypt.hs
+
+-- 2.
