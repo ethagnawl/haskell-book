@@ -12,3 +12,7 @@
 -- 1. see chapter-thirteen/encrypt.hs and chapter-thirteen/decrypt.hs
 
 -- 2. see chapter-thirteen/palindrome.hs
+
+-- 3. see chapter-thirteen/palindrome.hs
+
+-- 4. see chapter-thirteen/gimme_person.hs
