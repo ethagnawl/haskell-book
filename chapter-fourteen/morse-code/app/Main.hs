@@ -3,7 +3,7 @@ module Main where
 import Control.Monad (forever, when)
 import Data.List (intercalate)
 import Data.Traversable (traverse)
-import MorseCode (stringToMorse, morseToChar)
+import Morse (stringToMorse, morseToChar)
 import System.Environment (getArgs)
 import System.Exit (exitFailure,
                      exitSuccess)

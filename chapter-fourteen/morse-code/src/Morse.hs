@@ -1,4 +1,4 @@
-module  MorseCode
+module  Morse
         ( Morse
         , charToMorse
         , morseToChar
