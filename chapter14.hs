@@ -101,3 +101,50 @@ quickCheck prop_someF
 -- now you can test that it works:
 prop_readShow x = (read (show x)) == x
 quickCheck prop_readShow -- +++ OK, passed 100 tests.
+
+-- Failure
+square x = x * x
+-- why does this property not hold? Examine the type of sqrt.
+squareIdentity = square . sqrt
+prop_squareIdentity x = x == squareIdentity x
+quickCheck prop_squareIdentity
+-- *** Failed! Falsifiable (after 2 tests): 0.8974638037953522
+-- "[Floating-point] math is hard." - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+-- Idempotence
+-- ** What's up with these provided helper functions? Neither one of them
+-- typechecks.
+
+-- Use QuickCheck and the following helper functions to demon-
+-- strate idempotence for the following:
+import Data.Char
+import Data.List
+twice f = f . f
+fourTimes = twice . twice
+capitalizeWord [] = ""
+capitalizeWord (x:xs) = [toUpper x] ++ xs
+
+-- 1.
+prop_idempotentCapitalizeWord :: String -> Bool
+prop_idempotentCapitalizeWord x = twice capitalizeWord x == fourTimes capitalizeWord x
+quickCheck prop_idempotentCapitalizeWord -- +++ OK, passed 100 tests.
+
+-- 2.
+prop_idempotentSort x = twice sort x == fourTimes sort x
+quickCheck prop_idempotentSort -- +++ OK, passed 100 tests.
+
+-- Make a Gen random generator for the datatype
+data Fool = Fulse | Frue deriving (Eq, Show)
+
+-- 1. Equal probabilities for each.
+trivialFoolEq :: Gen Fool
+trivialFoolEq = elements [Fulse, Frue]
+sample' trivialFoolEq
+-- [Fulse,Frue,Frue,Fulse,Fulse,Frue,Frue,Frue,Fulse,Fulse,Fulse]
+
+-- 2. 2/3s chance of Fulse, 1/3 chance of Frue.
+trivialFoolWeighted :: Gen Fool
+trivialFoolWeighted = frequency [(3, return Fulse),
+                                 (6, return Frue)]
+sample' trivialFoolWeighted
+-- [Fulse,Fulse,Fulse,Fulse,Fulse,Frue,Fulse,Fulse,Frue,Frue,Fulse]
