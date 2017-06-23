@@ -76,19 +76,25 @@ fillInGuessCharacter :: Puzzle -> Char -> Puzzle
 fillInGuessCharacter (Puzzle wordToGuess filledInSoFar s) c =
   Puzzle wordToGuess filledInSoFar (c : s)
 
-handleGuess :: Puzzle -> Char -> IO Puzzle
+handleGuess :: Puzzle -> Char -> (String, Puzzle)
 handleGuess puzzle guess = do
-  putStrLn $ "Your guess was: " ++ [guess]
   case (charInWord puzzle guess, alreadyGuessed puzzle guess) of
     (_, True) -> do
-      putStrLn "You already guessed that character, pick something else!"
-      return puzzle
+      ("You already guessed that character, pick something else!",
+       puzzle)
     (True, _) -> do
-      putStrLn "This character was in the word, filling in the word accordingly"
-      return (fillInWordCharacter puzzle guess)
+      ("This character was in the word, filling in the word accordingly",
+       (fillInWordCharacter puzzle guess))
     (False, _) -> do
-      putStrLn "This character wasn't in the word, try again."
-      return (fillInGuessCharacter puzzle guess)
+      ("This character wasn't in the word, try again.",
+       (fillInGuessCharacter puzzle guess))
+
+handleGuessIO :: Puzzle -> Char -> IO Puzzle
+handleGuessIO puzzle guess = do
+  putStrLn $ "Your guess was: " ++ [guess]
+  putStrLn msg
+  return puzzle'
+  where (msg, puzzle') = handleGuess puzzle guess
 
 maxGuesses :: String -> Int
 maxGuesses wordToGuess = (length wordToGuess) `div` 2
@@ -111,7 +117,7 @@ gameWin (Puzzle wordToGuess filledInSoFar _) =
     do  putStrLn message
         exitSuccess
   else return ()
-  where message = "You corectly guessed, '" ++ wordToGuess ++ "'! You win!"
+  where message = "You correctly guessed, '" ++ wordToGuess ++ "'! You win!"
 
 validGuess c = elem c ['a' .. 'z']
 
@@ -126,7 +132,7 @@ runGame puzzle = forever $ do
   case guess of
     [c] ->
       if validGuess c
-        then handleGuess puzzle c >>= runGame
+        then handleGuessIO puzzle c >>= runGame
         else putStrLn "Guesses must be lowercase alphanumeric characters."
     _ -> putStrLn "Your guess must be a single character"
 
@@ -141,8 +147,56 @@ prop_fillInWordCharacter word = expected == actual
         discoveries' = ((Just guess) : (drop 1 discoveries))
         expected = (Puzzle word' discoveries' [])
 
+prop_handleGuessAlreadyGuessed :: String -> Bool
+prop_handleGuessAlreadyGuessed word = expected == actual
+  where word' = if (length word > 0) then nub word else "foo"
+        discoveries = [Just guess]
+        guess = head word'
+        guesses = [guess]
+        puzzle = (Puzzle word' discoveries guesses)
+        actual = handleGuess puzzle guess
+        expected = ("You already guessed that character, pick something else!",
+                    (Puzzle word' discoveries [guess]))
+
+prop_handleGuessSuccessful :: String -> Bool
+prop_handleGuessSuccessful word = expected == actual
+  where word' = if (length word > 0) then nub word else "foo"
+        guess = head word'
+        discoveries = map (const Nothing) [1 .. (length word')]
+        discoveries' = (Just guess) : (drop 1 discoveries)
+        guesses = []
+        guesses' = []
+        puzzle = (Puzzle word' discoveries guesses)
+        actual = handleGuess puzzle guess
+        expected = ("This character was in the word, filling in the word accordingly",
+                    (Puzzle word' discoveries' guesses'))
+
+prop_handleGuessUnsuccessful :: String -> Bool
+prop_handleGuessUnsuccessful word = expected == actual
+  where word' = nub word
+        word'' = if (length word' > 3) then word' else "foo"
+        word''' = drop 1 word''
+        guess = head $ take 1 word''
+        discoveries = map (const Nothing) [1 .. (length word''')]
+        guesses = []
+        guesses' = [guess]
+        puzzle = (Puzzle word''' discoveries guesses)
+        actual = handleGuess puzzle guess
+        expected = ("This character wasn't in the word, try again.",
+                    (Puzzle word''' discoveries guesses'))
+
 runQC = do
   quickCheck prop_fillInWordCharacter
+  -- I cheated (maybe?) and moved the IO portion of handleGuess into a
+  -- wrapper function (handleGuessIO), so I didn't have to muck with testing the IO
+  -- action itself. Though, I believe this is possible using niceties provided by
+  -- QuickCheck and/or parameter-izing the IO action and stubbing something
+  -- introspectable in during testing.  It'd also be nice to construct generators
+  -- which return _good_ values, instead of interrogating the value provided to
+  -- prop_handleGuess* and swapping in a default if the value is bogus.
+  quickCheck prop_handleGuessAlreadyGuessed
+  quickCheck prop_handleGuessSuccessful
+  quickCheck prop_handleGuessUnsuccessful
 
 main :: IO ()
 main = do
