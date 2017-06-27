@@ -41,3 +41,8 @@ runQuickcheck = do
   quickCheck (monoidAssoc :: FirstMappend)
   quickCheck (monoidLeftIdentity :: FstId)
   quickCheck (monoidRightIdentity :: FstId)
+
+-- re = (First' (Only 1) `mappend` First' Nada) == (First' {getFirst' = Only 1}) -- True
+-- re = (First' Nada `mappend` First' Nada) == (First' {getFirst' = Nada}) -- True
+-- re = (First' Nada `mappend` First' (Only 2)) == (First' {getFirst' = Only 2}) -- True
+-- re = (First' (Only 1) `mappend` First' (Only 2)) == (First' {getFirst' = Only 1}) -- True
