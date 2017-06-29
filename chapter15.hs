@@ -63,3 +63,12 @@ madlibbinBetter' e adv noun adj =
       adj,
       " wife."
     ]
+
+-- Polymorphism isn’t only useful for reusing code; it’s also useful for
+-- expressing intent through parametricity so that people reading the code know
+-- what we meant to accomplish.
+
+-- Chapter Exercises
+
+-- Semigroup Exercises
+-- See chapter-fifteen/semigroup-exercises
