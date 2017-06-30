@@ -1,14 +1,16 @@
 module Lib where
 
 import Control.Monad
--- import Data.Monoid
+import Data.Monoid hiding ((<>))
 import Test.QuickCheck
+import Test.QuickCheck.Function
+import Data.Semigroup (Semigroup, (<>), Sum(Sum, getSum))
 
-class Semigroup a where
-  (<>) :: a -> a -> a
+-- class Semigroup a where
+--   (<>) :: a -> a -> a
 
-instance Semigroup [a] where
-  (<>) as bs = as ++ bs
+-- instance Semigroup [a] where
+--   (<>) as bs = as ++ bs
 
 -- 1
 data Trivial = Trivial deriving (Eq, Show)
@@ -143,6 +145,97 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
 
 type OrAssoc = Or String String -> Or String String -> Or String String -> Bool
 
+-- 9
+-- https://stackoverflow.com/questions/39456716/how-to-write-semigroup-instance-for-this-data-type
+-- https://github.com/galderz/haskell-sandbox/blob/9118d8dc4638b0fcc24b1b6875ab3fa43e58c666/haskellbook/ch15-exercises.hb/SemigroupCombineCheck.hs
+
+newtype Combine a b = Combine { unCombine :: (a -> b) }
+
+instance Semigroup b => Semigroup (Combine a b) where
+  (<>) (Combine l) (Combine r) = Combine (\x -> (l x) <> (r x))
+
+funEquality :: (Arbitrary a, Show a, Eq b, Show b) => Combine a b -> Combine a b -> Property
+funEquality (Combine f) (Combine g) = property $ \a -> f a === g a
+
+type CombineAssoc a b = Combine a b -> Combine a b -> Combine a b -> Property
+
+combineAssoc :: (Semigroup b, Arbitrary a, Show a, Eq b, Show b) => CombineAssoc a b
+combineAssoc f g h = ((f <> g) <> h) `funEquality` (f <> (g <> h))
+
+-- 10
+newtype Comp a = Comp { unComp :: (Int -> Int) }
+
+instance Semigroup (Comp a) where
+  (<>) (Comp l) (Comp r) = Comp $ l . r
+
+-- Cheating, but I've burned far too much time on this and Combine ...
+prop_CompAssociative :: Int -> Bool
+prop_CompAssociative i =
+  unComp ((l <> m) <> r) i == unComp (l <> (m <> r)) i
+  where l = Comp (\n -> n * 2)
+        m = Comp (\n -> n * 2)
+        r = Comp (\n -> n * 2)
+
+-- 11
+data Validation a b = Failure' a | Success' b deriving (Eq, Show)
+
+instance Semigroup a => Semigroup (Validation a b) where
+  (<>) (Failure' l) (Success' r) = Failure' l
+  (<>) (Success' l) (Failure' r) = Failure' r
+  (<>) (Failure' l) (Failure' r) = Failure' (l <> r)
+  (<>) (Success' l) _ = Success' l
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Validation a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    oneof [
+            return (Failure' a)
+          , return (Success' b)
+          ]
+
+type ValidationAssoc = Validation String String -> Validation String String -> Validation String String -> Bool
+
+-- 12
+newtype AccumulateRight a b = AccumulateRight (Validation a b) deriving (Eq, Show)
+
+instance Semigroup b => Semigroup (AccumulateRight a b) where
+  (<>) (AccumulateRight (Success' l)) (AccumulateRight (Success' r)) = AccumulateRight $ Success' (l <> r)
+  (<>) (AccumulateRight (Success' l)) (AccumulateRight (Failure' r)) = AccumulateRight $ Success' l
+  (<>) (AccumulateRight (Failure' l)) (AccumulateRight (Success' r)) = AccumulateRight $ Success' r
+  (<>) (AccumulateRight (Failure' l)) _ = AccumulateRight $ Failure' l
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateRight a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    oneof [
+            return (AccumulateRight (Failure' a))
+          , return (AccumulateRight (Success' b))
+          ]
+
+type AccumulateRightAssoc = AccumulateRight String String -> AccumulateRight String String -> AccumulateRight String String -> Bool
+
+-- 13
+newtype AccumulateBoth a b = AccumulateBoth (Validation a b) deriving (Eq, Show)
+
+instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
+  (<>) (AccumulateBoth (Success' l)) (AccumulateBoth (Success' r)) = AccumulateBoth $ Success' (l <> r)
+  (<>) (AccumulateBoth (Failure' l)) (AccumulateBoth (Failure' r)) = AccumulateBoth $ Failure' (l <> r)
+  (<>) (AccumulateBoth (Failure' l)) _ = AccumulateBoth $ Failure' l
+  (<>) _ (AccumulateBoth (Failure' r)) = AccumulateBoth $ Failure' r
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateBoth a b) where
+  arbitrary = do
+    a <- arbitrary
+    b <- arbitrary
+    oneof [
+            return (AccumulateBoth (Failure' a))
+          , return (AccumulateBoth (Success' b))
+          ]
+
+type AccumulateBothAssoc = AccumulateBoth String String -> AccumulateBoth String String -> AccumulateBoth String String -> Bool
+
 runQuickCheck = do
   quickCheck (semigroupAssoc :: TrivialAssoc)
   quickCheck (semigroupAssoc :: IdentityAssoc)
@@ -152,3 +245,10 @@ runQuickCheck = do
   quickCheck (semigroupAssoc :: BoolConjAssoc)
   quickCheck (semigroupAssoc :: BoolDisjAssoc)
   quickCheck (semigroupAssoc :: OrAssoc)
+  quickCheck $ \(Fun _ f) (Fun _ g) (Fun _ h) ->
+    (combineAssoc :: CombineAssoc Int (Sum Int))
+    (Combine f) (Combine g) (Combine h)
+  quickCheck prop_CompAssociative
+  quickCheck (semigroupAssoc :: ValidationAssoc)
+  quickCheck (semigroupAssoc :: AccumulateRightAssoc)
+  quickCheck (semigroupAssoc :: AccumulateBothAssoc)
