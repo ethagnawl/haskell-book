@@ -72,3 +72,11 @@ madlibbinBetter' e adv noun adj =
 
 -- Semigroup Exercises
 -- See chapter-fifteen/semigroup-exercises
+
+-- Monoid Exercises
+-- See chapter-fifteen/monoid-exercises
+
+-- When Haskellers refer to algebras, they’re usually talking about
+-- a somewhat informal notion of operations over a type and its
+-- laws, such as with semigroups, monoids, groups, semirings, and
+-- rings.
