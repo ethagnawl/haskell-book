@@ -202,3 +202,92 @@ data Trivial a = Trivial a deriving (Eq, Show)
 
 instance Functor Trivial where
   fmap f (Trivial a) = Trivial (f a)
+
+-- Exercise: Possibly
+data Possibly a = LolNope | Yeppers a deriving (Eq, Show)
+
+instance Functor Possibly where
+  fmap f LolNope = LolNope
+  fmap f (Yeppers a) = Yeppers (f a)
+
+-- eta contract to drop the obvious argument(s)
+
+-- Short Exercise
+
+-- 1
+-- Write a Functor instance for a datatype identical to Either. We’ll
+-- use our own datatype because Either also already has a Functor
+-- instance.
+
+data Sum a b = First a | Second b deriving (Eq, Show)
+
+instance Functor (Sum a) where
+  fmap f (First a) = First a
+  fmap f (Second b) = Second (f b)
+
+-- hint: applyIfSecond :: (a -> b) -> (Sum e) a -> (Sum e) b
+
+-- 2. Why is a Functor instance that applies the function only to First,
+-- Either’s Left, impossible? We covered this earlier.
+
+-- The kind will be incorrect because there will be a trailing * -> *.
+
+-- Chater Exercises
+
+-- 1.
+data Bool = False | True deriving (Eq, Show)
+-- No. Bool's kind is *, instead of  * -> *
+
+-- 2.
+-- Either
+data BoolAndSomethingElse a = False' a | True' a deriving (Eq, Show)
+
+instance Functor BoolAndSomethingElse where
+  fmap f (False' a) = False' (f a)
+  fmap f (True' a) = True' (f a)
+
+-- 3.
+-- Maybe
+data BoolAndMaybeSomethingElse a = Falsish | Truish a deriving (Eq, Show)
+
+instance Functor BoolAndMaybeSomethingElse where
+  fmap _ Falsish = Falsish
+  fmap f (Truish a) = Truish (f a)
+
+-- 4. Use the kinds to guide you on this one, don’t get too hung up
+-- on the details.
+newtype Mu f = InF { outF :: f (Mu f) }
+-- Yes. Mu :: (* -> *) -> * applied to one arg (a la Either) becomes * -> *
+
+-- 5. Again, just follow the kinds and ignore the unfamiliar parts
+import GHC.Arr
+data D = D (Array Word Word) Int Int
+-- No. D :: *
+
+-- Rearrange the arguments to the type constructor of the datatype
+-- so the Functor instance works.
+
+-- 1.
+
+data Sum b a = First a | Second b deriving (Eq, Show)
+
+-- instance Functor (Sum e) where -- Why did the book use `e` here?
+instance Functor (Sum b) where
+  fmap f (First a) = First (f a)
+  fmap _ (Second b) = Second b
+
+-- 2
+
+data Company a c b = DeepBlue a c | Something b deriving (Eq, Show)
+
+instance Functor (Company a c) where
+  fmap f (Something b) = Something (f b)
+  fmap _ (DeepBlue a c) = DeepBlue a c
+
+-- 3
+
+data More b a = L a b a | R b a b deriving (Eq, Show)
+
+instance Functor (More b) where
+  fmap f (L a b a') = L (f a) b (f a')
+  fmap f (R b a b') = R b (f a) b'
