@@ -291,3 +291,103 @@ data More b a = L a b a | R b a b deriving (Eq, Show)
 instance Functor (More b) where
   fmap f (L a b a') = L (f a) b (f a')
   fmap f (R b a b') = R b (f a) b'
+
+-- Write Functor instances for the following datatypes.
+
+-- 1.
+
+data Quant a b = Finance | Desk a | Bloor b deriving (Eq, Show)
+
+instance Functor (Quant b) where
+  fmap _ Finance = Finance
+  fmap f (Desk a) = Desk a
+  fmap f (Bloor b) = Bloor (f b)
+
+-- 2
+
+data K a b = K a deriving (Eq, Show)
+
+instance Functor (K a) where
+  fmap f (K a) = K a
+
+-- 3
+
+-- {-# LANGUAGE FlexibleInstances #-}
+
+newtype Flip f a b = Flip (f b a) deriving (Eq, Show)
+
+newtype K a b = K a deriving (Eq, Show)
+
+data Pair a b = Pair Int String deriving (Show)
+
+instance Functor (Flip K a) where
+  fmap f (Flip (K a)) = Flip $ K (f a)
+
+-- 4.
+
+data EvilGoateeConst a b = GoatyConst b deriving (Show)
+
+instance Functor (EvilGoateeConst a) where
+  fmap f (GoatyConst b) = GoatyConst $ f b
+
+-- 5.
+-- Do you need something extra to make the instance work?
+
+data LiftItOut f a = LiftItOut (f a) deriving (Show)
+-- LiftItOut [1, 2, 3]
+-- fmap (+ 2) (LiftItOut [1, 2, 3]) => LiftItOut [3, 4, 5]
+
+instance Functor f => Functor (LiftItOut f) where
+  fmap f (LiftItOut a) = LiftItOut $ fmap f a
+
+-- 6.
+data Parappa f g a = DaWrappa (f a) (g a) deriving (Show)
+
+-- d = DaWrappa [1] [2]
+-- fmap (+ 2) d => DaWrappa [3] [4]
+
+instance (Functor f, Functor g) => Functor (Parappa f g) where
+  fmap f (DaWrappa l r) = DaWrappa (fmap f l) (fmap f r)
+
+-- 7.
+
+data IgnoreOne f g a b = IgnoringSomething (f a) (g b) deriving (Show)
+
+instance (Functor f, Functor g) => Functor (IgnoreOne f g a) where
+  fmap f (IgnoringSomething l r) = IgnoringSomething l $ (fmap f r)
+
+-- 8.
+
+data Notorious g o a t = Notorious (g o) (g a) (g t) deriving (Show)
+
+-- g needs to be a functor because f gets fmapped over it.
+instance Functor g => Functor (Notorious g o a) where
+  fmap f (Notorious l m r) = Notorious l m (fmap f r)
+
+-- 9.
+
+data List a = Nil | Cons a (List a) deriving (Show)
+
+instance Functor List where
+  fmap f Nil = Nil
+  fmap f (Cons x xs) = Cons (f x) (fmap f xs)
+
+-- 10.
+
+data GoatLord a = NoGoat
+                | OneGoat a
+                | MoreGoats (GoatLord a) (GoatLord a) (GoatLord a) deriving (Show)
+
+instance Functor GoatLord where
+  fmap f NoGoat = NoGoat
+  fmap f (OneGoat a) = OneGoat (f a)
+  fmap f (MoreGoats l m r) = MoreGoats (fmap f l) (fmap f m) (fmap f r)
+
+-- 11.
+
+data TalkToMe a = Halt | Print String a | Read (String -> a)
+
+instance Functor TalkToMe where
+  fmap _ Halt = Halt
+  fmap f (Print s a) = Print s (f a)
+  fmap f (Read f') = Read (fmap f f')
