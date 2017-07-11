@@ -9,6 +9,9 @@
 
 -- fmap length $ (++) <$> getLine <*> getLine => 6
 
+-- With Applicative, we have a Monoid for our structure and
+-- function application for our values!
+
 -- Exercises: Lookups
 
 -- 1.
@@ -54,12 +57,51 @@ x = lookup 3 $ zip xs ys
 y :: Maybe Integer
 y = lookup 2 $ zip xs ys
 
--- Wherein I raise my white flag:
+-- Pretty sure this isn't what the authors had in mind, but this is the only
+-- solution I can come up with that actually sums the two Integers.
+-- Relatedly, this is the only solution that I've seen _anywhere_ which actually
+-- sums the numbers. Now, that's not to say that it's the most correct or
+-- anything, but I think that points to a problem with this question: If
+-- actually summing the numbers wasn't the point, then `sum` should not have
+-- been used. If it was, this question is either too difficult or the chapter
+-- needed to better seed the solution. I'm also going to push back against the
+-- authors' suggestion to "ignore" difficult questions. I'm not very motivated
+-- to tackle the next question/section after having pounded my head against my
+-- keyboard for multiple hours and achieved nothing. Giving up makes me
+-- feel like I must have missed something important and that I'm not ready to
+-- move on. I told them this on Twitter (and got no response) but I would gladly
+-- pay for a comprehensive list of answers to check my work against and work
+-- backwards from if/when I do get stuck.
+-- </barf>
+
+import Data.Maybe
+import Data.Tuple
+
 summed :: Maybe Integer
-summed = Just $ (sum [(getX x), (getY y)])
-  where
-    getX (Just x') = x'
-    getX (Nothing) = 0
-    getY (Just y') = y'
-    getY (Nothing) = 0
+summed =  (pure sum) <*> (fmap fst tuple) <*> (fmap snd tuple)
+  where x' = Sum $ fromMaybe 0 x
+        y' = Sum $ fromMaybe 0 y
+        tuple = Just (x', y')
+
+-- Exercise: Identity Instance
+
+newtype Identity a = Identity a deriving (Eq, Ord, Show)
+
+instance Functor Identity where
+  fmap f (Identity v) = Identity (f v)
+
+instance Applicative Identity where
+  pure = Identity
+  (<*>) (Identity f) (Identity v) = Identity (f v)
+
+-- Exercise: Constant Instance
+
+newtype Constant a b = Constant { getConstant :: a } deriving (Eq, Ord, Show)
+
+instance Functor (Constant a) where
+  fmap f (Constant a) = Constant a
+
+instance Monoid a => Applicative (Constant a) where
+  pure a = Constant mempty
+  (<*>) (Constant l) (Constant r) = Constant (mappend l r)
 
