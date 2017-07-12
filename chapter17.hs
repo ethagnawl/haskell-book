@@ -118,3 +118,6 @@ const <$> Just "Hello" <*> pure "World"
 
 -- Exercises: List Applicative
 -- See chapter-seventeen/ListApplicativeTest.hs
+
+-- Exercises: ZipList Applicative
+-- See chapter-seventeen/ZipListApplicativeTest.hs
