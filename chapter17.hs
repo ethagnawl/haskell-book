@@ -117,7 +117,10 @@ const <$> Just "Hello" <*> pure "World"
 (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1, 2, 3]
 
 -- Exercises: List Applicative
--- See chapter-seventeen/ListApplicativeTest.hs
+-- See chapter-seventeen/list-applicative/ListApplicativeTest.hs
 
 -- Exercises: ZipList Applicative
--- See chapter-seventeen/ZipListApplicativeTest.hs
+-- See chapter-seventeen/zip-list-applicative/ZipListApplicativeTest.hs
+
+-- Exercise: Variations on Either
+-- see chapter-seventeen/validation-applicative/ValidationApplicativeTest.hs
