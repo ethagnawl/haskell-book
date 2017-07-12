@@ -105,3 +105,16 @@ instance Monoid a => Applicative (Constant a) where
   pure a = Constant mempty
   (<*>) (Constant l) (Constant r) = Constant (mappend l r)
 
+-- Exercise: Fixer Upper
+-- Given the function and values provided, use (<$>) from Functor, (<*>) and
+-- pure from the Applicative typeclass to fill in missing bits of the broken
+-- code to make it work.
+
+-- 1.
+const <$> Just "Hello" <*> pure "World"
+
+-- 2.
+(,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1, 2, 3]
+
+-- Exercises: List Applicative
+-- See chapter-seventeen/ListApplicativeTest.hs
