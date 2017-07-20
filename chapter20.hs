@@ -108,3 +108,68 @@ foldMap' f ta = foldr (\a b -> b `mappend` (f a)) mempty ta
 
 -- foldMap' Sum [1,2,3,4] -- Sum {getSum = 10}
 -- foldMap' Product [1,2,3,4] -- Product {getProduct = 24}
+
+-- Chapter Exercises
+
+-- 1.
+-- https://github.com/lukleh/haskell-book-exercises/blob/gh-pages/ch20/ch20_20.6_1.hs
+
+data Constant a b = Constant a deriving (Eq, Show)
+
+instance Foldable (Constant a) where
+  foldMap _ _ = mempty
+
+
+-- 2.
+
+data Two a b = Two a b deriving (Eq, Show)
+
+instance Foldable (Two a) where
+  foldMap f (Two a b) = f b
+
+-- 3.
+
+data Three a b c = Three a b c deriving (Eq, Show)
+
+instance Foldable (Three a b) where
+  foldMap f (Three a b c) = f c
+
+-- 4.
+
+data Three' a b = Three' a b b deriving (Eq, Show)
+
+instance Foldable (Three' a) where
+  foldMap f (Three' a b b') = f b `mappend` f b'
+
+-- 5.
+
+data Four' a b = Four' a b b b deriving (Eq, Show)
+
+instance Foldable (Four' a) where
+  foldMap f (Four' a b b' b'') = f b `mappend` f b' `mappend` f b''
+
+-- Punting on this one.
+-- I don't think the following counts because the f never becomes t. I can get the
+-- t a -> f a version to compile, but it throws instance errors whenever I try
+-- to use it.
+filterF :: (Applicative f, Foldable f, Monoid (f a)) => (a -> Bool) -> f a -> f a
+filterF predicate xs = foldMap
+                        (\x ->
+                          case (predicate x) of
+                            True -> (pure x)
+                            False -> mempty)
+                        xs
+
+-- <interactive>:95:1:
+--     No instance for (Show (f0 [Char])) arising from a use of ‘print’
+--     The type variable ‘f0’ is ambiguous
+--     Note: there are several potential instances:
+--       instance (Show a, Show b) => Show (Either a b)
+--         -- Defined in ‘Data.Either’
+--       instance forall (k :: BOX) (f :: k -> *) (a :: k).
+--                Show (f a) =>
+--                Show (Alt f a)
+--         -- Defined in ‘Data.Monoid’
+--       instance Show a => Show (Dual a) -- Defined in ‘Data.Monoid’
+--       ...plus 23 others
+--     In a stmt of an interactive GHCi command: print it
